@@ -1,0 +1,17 @@
+
+.env
+
+venv/
+.venv/
+
+# Cache do Spotipy (guarda o token de autenticação)
+.cache
+
+__pycache__/
+*.pyc
+
+data/raw/
+data/processed/
+
+.vscode/
+.idea/
