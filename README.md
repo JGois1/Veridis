@@ -1,4 +1,4 @@
-# Veridis 🎧
+# veridis 🎧
 
 Projeto de dados que explora meus próprios hábitos de escuta no Spotify, combinando
 dados extraídos via **API oficial do Spotify** com uma base histórica maior de
@@ -16,7 +16,7 @@ dashboard final em Power BI.
 
 ### 1. Clone o repositório e entre na pasta
 ```bash
-git clone <seu-link-do-repo>
+git clone https://github.com/JGois1/Veridis.git
 cd veridis
 ```
 
@@ -66,6 +66,16 @@ imprimir suas top 5 faixas mais escutadas recentemente no terminal.
 - SQL
 - Power BI
 - Git/GitHub
+
+## Resultados até agora
+
+### Dados brutos organizados no S3
+
+Os arquivos extraídos da API do Spotify são enviados automaticamente pro bucket,
+particionados por tipo de dado (top faixas, top artistas, tocadas recentemente,
+curtidas):
+
+![Bucket S3 com dados organizados por pasta](images/s3_bucket.png)
 
 ## Próximos passos
 
