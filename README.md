@@ -1,65 +1,59 @@
 # veridis 🎧
 
-Projeto de dados que explora meus próprios hábitos de escuta no Spotify, combinando
-dados extraídos via **API oficial do Spotify** com uma base histórica maior de
-streams globais (Kaggle), construindo um pipeline completo de engenharia de dados:
-extração → armazenamento em nuvem (AWS S3) → transformação → modelagem em SQL →
-dashboard final em Power BI.
+A data engineering project exploring my personal listening habits on Spotify. It combines data extracted via the **official Spotify API** with a larger historical dataset of global streams (Kaggle), building an end-to-end data pipeline: extraction → cloud storage (AWS S3) → transformation → SQL modeling → final Power BI dashboard.
 
-> Nome inspirado em "Veridis Quo", do Daft Punk.
+> Name inspired by Daft Punk's "Veridis Quo".
 
-## Status do projeto
+## Project status
 
-🚧 Em construção — começando pela etapa de extração via API.
+🚧 Under construction — currently working on the API extraction phase.
 
-## Como rodar
+## Getting started
 
-### 1. Clone o repositório e entre na pasta
+### 1. Clone the repository and navigate to the directory
 ```bash
 git clone https://github.com/JGois1/Veridis.git
 cd veridis
 ```
 
-### 2. Crie um ambiente virtual
+### 2. Create a virtual environment
 ```bash
 python -m venv venv
 source venv/bin/activate    # Windows: venv\Scripts\activate
 ```
 
-### 3. Instale as dependências
+### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure suas credenciais
-Copie o arquivo de exemplo e preencha com suas credenciais do
-[Spotify Developer Dashboard](https://developer.spotify.com/dashboard):
+### 4. Set up your credentials
+Copy the sample file and fill in your credentials from the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard):
 
 ```bash
 cp .env.example .env
 ```
 
-Depois edite o `.env` com seu `SPOTIFY_CLIENT_ID` e `SPOTIFY_CLIENT_SECRET`.
+Then edit `.env` with your `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`.
 
-### 5. Teste a conexão
+### 5. Test the connection
 ```bash
 python src/auth_test.py
 ```
 
-Isso vai abrir o navegador pedindo login e autorização no Spotify, e depois
-imprimir suas top 5 faixas mais escutadas recentemente no terminal.
+This will open your browser requesting Spotify login and authorization, then print your top 5 recently played tracks in the terminal.
 
-## Arquitetura (planejada)
+## Architecture (planned)
 
 ```
-[API Spotify] ─┐
-               ├─→ [Extração Python] → [S3: dados brutos] → [Transformação]
-[Kaggle CSV] ──┘                                                  │
-                                                                    ▼
-                                            [SQL: modelagem] → [Power BI]
+[Spotify API] ─┐
+               ├─→ [Python Extraction] → [S3: Raw Data] → [Transformation]
+[Kaggle CSV] ──┘                                                 │
+                                                                 ▼
+                                                [SQL: Modeling] → [Power BI]
 ```
 
-## Tecnologias
+## Tech stack
 
 - Python (spotipy, pandas)
 - AWS S3
@@ -67,22 +61,20 @@ imprimir suas top 5 faixas mais escutadas recentemente no terminal.
 - Power BI
 - Git/GitHub
 
-## Resultados até agora
+## Results so far
 
-### Dados brutos organizados no S3
+### Organized raw data in S3
 
-Os arquivos extraídos da API do Spotify são enviados automaticamente pro bucket,
-particionados por tipo de dado (top faixas, top artistas, tocadas recentemente,
-curtidas):
+Files extracted from the Spotify API are automatically uploaded to the bucket, partitioned by data type (top tracks, top artists, recently played, saved tracks):
 
-![Bucket S3 com dados organizados por pasta](screenshots/s3_bucket.png)
+![S3 Bucket with data organized by folder](screenshots/s3_bucket.png)
 
-## Próximos passos
+## Next steps
 
-- [ ] Testar autenticação
-- [ ] Extrair top faixas, artistas e audio features
-- [ ] Subir dados brutos para o S3
-- [ ] Baixar e explorar dataset do Kaggle
-- [ ] Transformar e unificar as duas fontes
-- [ ] Modelar em SQL
-- [ ] Construir dashboard no Power BI
+- [ ] Test authentication
+- [ ] Extract top tracks, top artists, and audio features
+- [ ] Upload raw data to S3
+- [ ] Download and explore Kaggle dataset
+- [ ] Transform and unify both data sources
+- [ ] Model data in SQL
+- [ ] Build Power BI dashboard
