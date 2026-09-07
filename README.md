@@ -75,7 +75,7 @@ Os arquivos extraídos da API do Spotify são enviados automaticamente pro bucke
 particionados por tipo de dado (top faixas, top artistas, tocadas recentemente,
 curtidas):
 
-![Bucket S3 com dados organizados por pasta](images/s3_bucket.png)
+![Bucket S3 com dados organizados por pasta](screenshots/s3_bucket.png)
 
 ## Próximos passos
 
