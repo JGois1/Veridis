@@ -22,6 +22,17 @@ PROCESSED_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "proc
 VALOR_PADRAO = "indisponível"
 
 
+def formatar_duracao(duration_ms):
+    """Converte milissegundos para o formato mm:ss (ex: 485000 -> '8:05'),
+    que é como as pessoas normalmente leem duração de música."""
+    if not duration_ms:
+        return VALOR_PADRAO
+    total_segundos = int(duration_ms / 1000)
+    minutos = total_segundos // 60
+    segundos = total_segundos % 60
+    return f"{minutos}:{segundos:02d}"  # :02d garante "05" em vez de "5"
+
+
 def load_latest_json(prefix):
     """Encontra e carrega o arquivo JSON mais recente que começa com o
     prefixo dado (ex: 'top_tracks' encontra 'top_tracks_2026-09-03.json')."""
@@ -46,6 +57,7 @@ def transform_top_tracks(raw_data):
             "popularidade": track.get("popularity", VALOR_PADRAO),
             "duracao_ms": track.get("duration_ms", VALOR_PADRAO),
             "duracao_min": round(track["duration_ms"] / 60000, 2) if track.get("duration_ms") else VALOR_PADRAO,
+            "duracao_formatada": formatar_duracao(track.get("duration_ms")),
             "data_lancamento": track.get("album", {}).get("release_date", VALOR_PADRAO),
             "spotify_id": track.get("id", VALOR_PADRAO),
         })
