@@ -1,10 +1,6 @@
-"""
-veridis — teste de autenticação com a API do Spotify
-
-Esse script serve só pra confirmar que a autenticação está funcionando.
-Ele vai abrir o navegador, pedir pra você logar no Spotify e autorizar o app,
-e depois imprimir suas top 5 faixas mais escutadas recentemente.
-"""
+# Esse script serve só pra confirmar que a autenticação está funcionando.
+# Ele vai abrir o navegador, pedir pra você logar no Spotify e autorizar o app,
+# e depois imprimir suas top 5 faixas mais escutadas recentemente.
 
 import os
 from dotenv import load_dotenv
@@ -21,7 +17,7 @@ SCOPE = "user-top-read"
 
 
 def get_spotify_client():
-    """Cria e retorna um cliente autenticado do Spotify."""
+    # Cria e retorna um cliente autenticado do Spotify.
     auth_manager = SpotifyOAuth(
         client_id=CLIENT_ID,
         client_secret=CLIENT_SECRET,
@@ -32,7 +28,7 @@ def get_spotify_client():
 
 
 def test_connection():
-    """Testa a conexão buscando as top 5 faixas do usuário."""
+    # Testa a conexão buscando as top 5 faixas do usuário.
     sp = get_spotify_client()
 
     print("\nConectado com sucesso! Buscando suas top faixas...\n")

@@ -1,15 +1,11 @@
-"""
-veridis — transformação dos dados do Spotify
-
-Lê os arquivos JSON brutos (em data/raw/), extrai só os campos que
-interessam pra análise, limpa e organiza em tabelas, e salva como CSV
-em data/processed/ — prontos para virar tabelas SQL na próxima etapa.
-
-Nota: usei .get() em vez de [] em vários campos porque o Spotify
-restringiu alguns campos (como "popularity" e "genres") para apps
-criados recentemente. Com .get(), se o campo não vier na resposta,
-usamos um valor padrão em vez de o script quebrar.
-"""
+# Lê os arquivos JSON brutos (em data/raw/), extrai só os campos que
+# interessam pra análise, limpa e organiza em tabelas, e salva como CSV
+# em data/processed/ — prontos para virar tabelas SQL na próxima etapa.
+#
+# Nota: usei .get() em vez de [] em vários campos porque o Spotify
+# restringiu alguns campos (como "popularity" e "genres") para apps
+# criados recentemente. Com .get(), se o campo não vier na resposta,
+# usamos um valor padrão em vez de o script quebrar.
 
 import os
 import glob
@@ -23,8 +19,8 @@ VALOR_PADRAO = "indisponível"
 
 
 def formatar_duracao(duration_ms):
-    """Converte milissegundos para o formato mm:ss (ex: 485000 -> '8:05'),
-    que é como as pessoas normalmente leem duração de música."""
+    # Converte milissegundos para o formato mm:ss (ex: 485000 -> '8:05'),
+    # que é como as pessoas normalmente leem duração de música.
     if not duration_ms:
         return VALOR_PADRAO
     total_segundos = int(duration_ms / 1000)
@@ -34,8 +30,8 @@ def formatar_duracao(duration_ms):
 
 
 def load_latest_json(prefix):
-    """Encontra e carrega o arquivo JSON mais recente que começa com o
-    prefixo dado (ex: 'top_tracks' encontra 'top_tracks_2026-09-03.json')."""
+    # Encontra e carrega o arquivo JSON mais recente que começa com o
+    # prefixo dado (ex: 'top_tracks' encontra 'top_tracks_2026-09-03.json').
     pattern = os.path.join(RAW_DATA_DIR, f"{prefix}_*.json")
     files = sorted(glob.glob(pattern))
     if not files:
@@ -46,7 +42,7 @@ def load_latest_json(prefix):
 
 
 def transform_top_tracks(raw_data):
-    """Extrai campos relevantes das top faixas."""
+    # Extrai campos relevantes das top faixas.
     rows = []
     for i, track in enumerate(raw_data, start=1):
         rows.append({
@@ -65,7 +61,7 @@ def transform_top_tracks(raw_data):
 
 
 def transform_top_artists(raw_data):
-    """Extrai campos relevantes dos top artistas."""
+    # Extrai campos relevantes dos top artistas.
     rows = []
     for i, artist in enumerate(raw_data, start=1):
         generos = artist.get("genres")
@@ -81,7 +77,7 @@ def transform_top_artists(raw_data):
 
 
 def transform_recently_played(raw_data):
-    """Extrai campos relevantes das músicas tocadas recentemente."""
+    # Extrai campos relevantes das músicas tocadas recentemente.
     rows = []
     for item in raw_data:
         track = item.get("track", {})
@@ -98,7 +94,7 @@ def transform_recently_played(raw_data):
 
 
 def transform_saved_tracks(raw_data):
-    """Extrai campos relevantes das músicas curtidas/salvas."""
+    # Extrai campos relevantes das músicas curtidas/salvas.
     rows = []
     for item in raw_data:
         track = item.get("track", {})
@@ -116,7 +112,7 @@ def transform_saved_tracks(raw_data):
 
 
 def save_csv(df, filename):
-    """Salva um DataFrame como CSV em data/processed/."""
+    # Salva um DataFrame como CSV em data/processed/.
     os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
     filepath = os.path.join(PROCESSED_DATA_DIR, filename)
     df.to_csv(filepath, index=False, encoding="utf-8")

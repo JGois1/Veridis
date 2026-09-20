@@ -1,10 +1,6 @@
-"""
-veridis — extração de dados do Spotify
-
-Puxa os principais dados da sua conta e salva localmente em arquivos JSON,
-dentro de data/raw/. Essa é a camada "bruta" do pipeline — depois vamos
-tratar/transformar esses dados e, mais pra frente, subir pro S3.
-"""
+# Puxa os principais dados da sua conta e salva localmente em arquivos JSON,
+# dentro de data/raw/. Essa é a camada "bruta" do pipeline — depois vamos
+# tratar/transformar esses dados e, mais pra frente, subir pro S3.
 
 import os
 import json
@@ -26,7 +22,7 @@ RAW_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "raw")
 
 
 def get_spotify_client():
-    """Cria e retorna um cliente autenticado do Spotify."""
+    # Cria e retorna um cliente autenticado do Spotify.
     auth_manager = SpotifyOAuth(
         client_id=CLIENT_ID,
         client_secret=CLIENT_SECRET,
@@ -37,7 +33,7 @@ def get_spotify_client():
 
 
 def save_json(data, filename):
-    """Salva um dicionário/lista como JSON dentro de data/raw/."""
+    # Salva um dicionário/lista como JSON dentro de data/raw/.
     os.makedirs(RAW_DATA_DIR, exist_ok=True)
     filepath = os.path.join(RAW_DATA_DIR, filename)
     with open(filepath, "w", encoding="utf-8") as f:
@@ -46,27 +42,27 @@ def save_json(data, filename):
 
 
 def extract_top_tracks(sp, time_range="medium_term", limit=50):
-    """Extrai as top faixas do usuário. time_range: short_term (4 sem),
-    medium_term (6 meses) ou long_term (histórico completo)."""
+    # Extrai as top faixas do usuário. time_range: short_term (4 sem),
+    # medium_term (6 meses) ou long_term (histórico completo).
     results = sp.current_user_top_tracks(limit=limit, time_range=time_range)
     return results["items"]
 
 
 def extract_top_artists(sp, time_range="medium_term", limit=50):
-    """Extrai os top artistas do usuário."""
+    # Extrai os top artistas do usuário.
     results = sp.current_user_top_artists(limit=limit, time_range=time_range)
     return results["items"]
 
 
 def extract_recently_played(sp, limit=50):
-    """Extrai as últimas faixas tocadas (máximo de 50 por chamada, é um
-    limite da própria API)."""
+    # Extrai as últimas faixas tocadas (máximo de 50 por chamada, é um
+    # limite da própria API).
     results = sp.current_user_recently_played(limit=limit)
     return results["items"]
 
 
 def extract_saved_tracks(sp, limit=50):
-    """Extrai as músicas curtidas/salvas pelo usuário."""
+    # Extrai as músicas curtidas/salvas pelo usuário.
     results = sp.current_user_saved_tracks(limit=limit)
     return results["items"]
 

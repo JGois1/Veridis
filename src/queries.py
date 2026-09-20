@@ -1,9 +1,5 @@
-"""
-veridis — consultas SQL de exemplo
-
-Roda algumas queries interessantes sobre os dados carregados no
-banco SQLite, respondendo perguntas reais sobre seus hábitos de escuta.
-"""
+# Roda algumas queries interessantes sobre os dados carregados no
+# banco SQLite, respondendo perguntas reais sobre seus hábitos de escuta.
 
 import os
 import sqlite3
@@ -13,7 +9,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "veridis.db")
 
 
 def run_query(conn, titulo, query):
-    """Roda uma query e imprime o resultado formatado."""
+    #Roda uma query e imprime o resultado formatado.
     print(f"\n{'=' * 60}")
     print(titulo)
     print("=" * 60)

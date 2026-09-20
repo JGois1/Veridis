@@ -1,10 +1,6 @@
-"""
-veridis — playground de exploração da API do Spotify
-
-Esse arquivo é um espaço livre pra testar endpoints e brincar com os dados, sem misturar
-com os scripts do pipeline (auth_test.py, extract.py, etc).
-Nada aqui é salvo — é só pra visualizar na tela e aprender.
-"""
+# Esse arquivo é um espaço livre pra testar endpoints e brincar com os dados, sem misturar
+# com os scripts do pipeline (auth_test.py, extract.py, etc).
+# Nada aqui é salvo — é só pra visualizar na tela e aprender.
 
 import os
 from dotenv import load_dotenv
@@ -21,7 +17,7 @@ SCOPE = "user-top-read user-read-recently-played user-library-read"
 
 
 def get_spotify_client():
-    """Cria e retorna um cliente autenticado do Spotify."""
+    # Cria e retorna um cliente autenticado do Spotify.
     auth_manager = SpotifyOAuth(
         client_id=CLIENT_ID,
         client_secret=CLIENT_SECRET,
