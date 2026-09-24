@@ -2,31 +2,31 @@
 veridis — consultas SQL de exemplo
 
 Roda algumas queries interessantes sobre os dados carregados no
-banco SQLite, respondendo perguntas reais sobre seus hábitos de escuta.
+banco PostgreSQL, respondendo perguntas reais sobre seus hábitos de escuta.
+
+Nota: as funções de data mudaram em relação à versão SQLite. O Postgres
+usa EXTRACT(DOW FROM ...) e EXTRACT(HOUR FROM ...) em vez de strftime().
 """
 
-import os
-import sqlite3
+from load_to_sql import get_engine
 import pandas as pd
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "veridis.db")
 
-
-def run_query(conn, titulo, query):
-    #Roda uma query e imprime o resultado formatado.
+def run_query(engine, titulo, query):
+    """Roda uma query e imprime o resultado formatado."""
     print(f"\n{'=' * 60}")
     print(titulo)
     print("=" * 60)
-    df = pd.read_sql_query(query, conn)
+    df = pd.read_sql_query(query, engine)
     print(df.to_string(index=False))
     return df
 
 
 def main():
-    conn = sqlite3.connect(DB_PATH)
+    engine = get_engine()
 
     # 1. Quais artistas mais aparecem no seu top de faixas?
-    run_query(conn, "TOP 10 ARTISTAS (por número de faixas no seu top)", """
+    run_query(engine, "TOP 10 ARTISTAS (por número de faixas no seu top)", """
         SELECT artista, COUNT(*) AS numero_de_faixas
         FROM top_tracks
         GROUP BY artista
@@ -35,17 +35,17 @@ def main():
     """)
 
     # 2. Suas faixas mais longas
-    run_query(conn, "5 FAIXAS MAIS LONGAS DO SEU TOP", """
-        SELECT nome_faixa, artista, duracao_min
+    run_query(engine, "5 FAIXAS MAIS LONGAS DO SEU TOP", """
+        SELECT nome_faixa, artista, duracao_formatada
         FROM top_tracks
         ORDER BY duracao_min DESC
         LIMIT 5;
     """)
 
     # 3. Distribuição por década de lançamento
-    run_query(conn, "SUAS FAIXAS TOP POR DÉCADA DE LANÇAMENTO", """
+    run_query(engine, "SUAS FAIXAS TOP POR DÉCADA DE LANÇAMENTO", """
         SELECT
-            (CAST(SUBSTR(data_lancamento, 1, 4) AS INTEGER) / 10) * 10 AS decada,
+            (CAST(SUBSTRING(data_lancamento FROM 1 FOR 4) AS INTEGER) / 10) * 10 AS decada,
             COUNT(*) AS numero_de_faixas
         FROM top_tracks
         WHERE data_lancamento != 'indisponível'
@@ -54,7 +54,7 @@ def main():
     """)
 
     # 4. Artistas que aparecem tanto no top quanto nas curtidas (cruzando tabelas)
-    run_query(conn, "ARTISTAS QUE APARECEM NO TOP *E* NAS CURTIDAS", """
+    run_query(engine, "ARTISTAS QUE APARECEM NO TOP *E* NAS CURTIDAS", """
         SELECT DISTINCT t.artista
         FROM top_tracks t
         INNER JOIN saved_tracks s ON t.artista = s.artista
@@ -62,15 +62,15 @@ def main():
     """)
 
     # 5. Quantas faixas distintas você tocou recentemente
-    run_query(conn, "TOTAL DE FAIXAS DISTINTAS TOCADAS RECENTEMENTE", """
+    run_query(engine, "TOTAL DE FAIXAS DISTINTAS TOCADAS RECENTEMENTE", """
         SELECT COUNT(DISTINCT nome_faixa) AS faixas_distintas
         FROM recently_played;
     """)
 
     # 6. Em que dia da semana você mais escuta música?
-    run_query(conn, "ESCUTAS POR DIA DA SEMANA", """
+    run_query(engine, "ESCUTAS POR DIA DA SEMANA", """
         SELECT
-            CASE CAST(strftime('%w', tocada_em) AS INTEGER)
+            CASE EXTRACT(DOW FROM tocada_em)
                 WHEN 0 THEN 'Domingo'
                 WHEN 1 THEN 'Segunda'
                 WHEN 2 THEN 'Terça'
@@ -86,12 +86,12 @@ def main():
     """)
 
     # 7. Em que horário do dia você mais escuta música?
-    run_query(conn, "ESCUTAS POR FAIXA DE HORÁRIO", """
+    run_query(engine, "ESCUTAS POR FAIXA DE HORÁRIO", """
         SELECT
             CASE
-                WHEN CAST(strftime('%H', tocada_em) AS INTEGER) BETWEEN 6 AND 11 THEN 'Manhã (6h-12h)'
-                WHEN CAST(strftime('%H', tocada_em) AS INTEGER) BETWEEN 12 AND 17 THEN 'Tarde (12h-18h)'
-                WHEN CAST(strftime('%H', tocada_em) AS INTEGER) BETWEEN 18 AND 23 THEN 'Noite (18h-24h)'
+                WHEN EXTRACT(HOUR FROM tocada_em) BETWEEN 6 AND 11 THEN 'Manhã (6h-12h)'
+                WHEN EXTRACT(HOUR FROM tocada_em) BETWEEN 12 AND 17 THEN 'Tarde (12h-18h)'
+                WHEN EXTRACT(HOUR FROM tocada_em) BETWEEN 18 AND 23 THEN 'Noite (18h-24h)'
                 ELSE 'Madrugada (0h-6h)'
             END AS faixa_horario,
             COUNT(*) AS numero_de_escutas
@@ -100,7 +100,7 @@ def main():
         ORDER BY numero_de_escutas DESC;
     """)
 
-    conn.close()
+    engine.dispose()
 
 
 if __name__ == "__main__":
