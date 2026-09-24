@@ -1,5 +1,9 @@
-# Pega os arquivos JSON gerados pelo extract.py (em data/raw/) e sobe
-# para o bucket S3, organizados em pastas por tipo de dado e data
+"""
+veridis — upload para o AWS S3
+
+Pega os arquivos JSON gerados pelo extract.py (em data/raw/) e sobe
+para o bucket S3, organizados em pastas por tipo de dado e data
+"""
 
 import os
 import glob
@@ -17,7 +21,7 @@ RAW_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "raw")
 
 
 def get_s3_client():
-    # Cria e retorna um cliente autenticado do S3.
+    """Cria e retorna um cliente autenticado do S3."""
     return boto3.client(
         "s3",
         aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -27,7 +31,7 @@ def get_s3_client():
 
 
 def upload_file(s3_client, local_path, s3_key):
-    # Sobe um único arquivo para o S3.
+    """Sobe um único arquivo para o S3."""
     s3_client.upload_file(local_path, AWS_BUCKET_NAME, s3_key)
     print(f"  Enviado: {s3_key}")
 

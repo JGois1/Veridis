@@ -1,8 +1,12 @@
-# Pega os CSVs já limpos (em data/processed/) e carrega num banco de
-# dados SQLite (data/veridis.db). SQLite não precisa de servidor — o
-# banco inteiro é um único arquivo, ideal pra projetos de portfólio.
-#
-# Cada CSV vira uma tabela com o mesmo nome (sem o .csv).
+"""
+veridis — carregar dados no banco SQLite
+
+Pega os CSVs já limpos (em data/processed/) e carrega num banco de
+dados SQLite (data/veridis.db). SQLite não precisa de servidor — o
+banco inteiro é um único arquivo, ideal pra projetos de portfólio.
+
+Cada CSV vira uma tabela com o mesmo nome (sem o .csv).
+"""
 
 import os
 import glob
@@ -14,8 +18,8 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "veridis.db")
 
 
 def load_csv_to_table(conn, csv_path):
-    # Lê um CSV e carrega como tabela no banco, usando o nome do
-    # arquivo (sem .csv) como nome da tabela.
+    """Lê um CSV e carrega como tabela no banco, usando o nome do
+    arquivo (sem .csv) como nome da tabela."""
     table_name = os.path.splitext(os.path.basename(csv_path))[0]
     df = pd.read_csv(csv_path)
 

@@ -1,5 +1,9 @@
-# Roda algumas queries interessantes sobre os dados carregados no
-# banco SQLite, respondendo perguntas reais sobre seus hábitos de escuta.
+"""
+veridis — consultas SQL de exemplo
+
+Roda algumas queries interessantes sobre os dados carregados no
+banco SQLite, respondendo perguntas reais sobre seus hábitos de escuta.
+"""
 
 import os
 import sqlite3
