@@ -19,7 +19,6 @@ CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI")
 
-# Escopos necessários para cada tipo de dado que vamos buscar
 SCOPE = "user-top-read user-read-recently-played user-library-read"
 
 RAW_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "raw")
@@ -46,29 +45,49 @@ def save_json(data, filename):
 
 
 def extract_top_tracks(sp, time_range="medium_term", limit=50):
-    """Extrai as top faixas do usuário. time_range: short_term (4 sem),
-    medium_term (6 meses) ou long_term (histórico completo)."""
+    """Extrai as top faixas do usuário. Limitado a 50 pela própria API
+    (é um cálculo do Spotify, não sua biblioteca completa)."""
     results = sp.current_user_top_tracks(limit=limit, time_range=time_range)
     return results["items"]
 
 
 def extract_top_artists(sp, time_range="medium_term", limit=50):
-    """Extrai os top artistas do usuário."""
+    """Extrai os top artistas do usuário. Mesmo limite de 50 da API."""
     results = sp.current_user_top_artists(limit=limit, time_range=time_range)
     return results["items"]
 
 
 def extract_recently_played(sp, limit=50):
-    """Extrai as últimas faixas tocadas (máximo de 50 por chamada, é um
-    limite da própria API)."""
+    """Extrai as últimas faixas tocadas. A própria API só guarda
+    histórico das últimas 50 reproduções, não dá pra paginar além disso."""
     results = sp.current_user_recently_played(limit=limit)
     return results["items"]
 
 
-def extract_saved_tracks(sp, limit=50):
-    """Extrai as músicas curtidas/salvas pelo usuário."""
-    results = sp.current_user_saved_tracks(limit=limit)
-    return results["items"]
+def extract_saved_tracks(sp):
+    """Extrai TODAS as músicas curtidas/salvas pelo usuário, usando
+    paginação — diferente dos outros endpoints, aqui não existe teto
+    da API: sua biblioteca pode ter qualquer quantidade de faixas, então
+    percorremos página por página (50 em 50) até acabar."""
+    todas_as_faixas = []
+    offset = 0
+    limit = 50
+
+    while True:
+        results = sp.current_user_saved_tracks(limit=limit, offset=offset)
+        itens_da_pagina = results["items"]
+        todas_as_faixas.extend(itens_da_pagina)
+
+        print(f"  Página em offset={offset}: {len(itens_da_pagina)} faixas (total até agora: {len(todas_as_faixas)})")
+
+        # Se essa página veio com menos itens que o limite pedido,
+        # significa que chegamos ao fim da biblioteca
+        if len(itens_da_pagina) < limit:
+            break
+
+        offset += limit
+
+    return todas_as_faixas
 
 
 def run_extraction():
@@ -87,7 +106,7 @@ def run_extraction():
     recently_played = extract_recently_played(sp)
     save_json(recently_played, f"recently_played_{timestamp}.json")
 
-    print("Extraindo músicas curtidas...")
+    print("Extraindo músicas curtidas (todas, com paginação)...")
     saved_tracks = extract_saved_tracks(sp)
     save_json(saved_tracks, f"saved_tracks_{timestamp}.json")
 

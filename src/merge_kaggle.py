@@ -7,7 +7,9 @@ features (dançabilidade, energia, valence, etc) — dados que a API do
 Spotify restringiu para apps novos.
 
 O cruzamento é feito por nome da faixa + artista, já que os IDs do
-Kaggle não correspondem aos IDs da sua conta Spotify.
+Kaggle não correspondem aos IDs da sua conta Spotify. É aplicado tanto
+nas top faixas quanto nas músicas curtidas (a base maior, com toda a
+biblioteca).
 """
 
 import os
@@ -18,9 +20,14 @@ import pandas as pd
 PROCESSED_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "processed")
 EXTERNAL_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "external")
 
-# Colunas do dataset do Kaggle que queremos trazer pro nosso lado
-# (o dataset usa "track_genre", não "genre")
+# Colunas de audio features do dataset do Kaggle que queremos trazer pro nosso lado
 COLUNAS_AUDIO_FEATURES = ["danceability", "energy", "valence", "tempo", "acousticness"]
+
+# Tabelas pessoais que serão enriquecidas: (arquivo de entrada, arquivo de saída)
+TABELAS_PARA_ENRIQUECER = [
+    ("top_tracks.csv", "top_tracks_enriquecido.csv"),
+    ("saved_tracks.csv", "saved_tracks_enriquecido.csv"),
+]
 
 
 def normalizar(texto):
@@ -53,9 +60,8 @@ def carregar_dataset_kaggle():
     # (que também só guardam o artista principal da faixa).
     df["artista_norm"] = df["artists"].apply(lambda x: normalizar(str(x).split(";")[0]))
 
-    # O Kaggle tem uma linha por gênero em que a faixa se encaixa (a mesma
-    # música pode aparecer várias vezes, uma por gênero). Agrupamos por
-    # faixa+artista, juntando todos os gêneros numa lista só, e mantendo
+    # O Kaggle tem uma linha por gênero em que a faixa se encaixa. Agrupamos
+    # por faixa+artista, juntando todos os gêneros numa lista só, e mantendo
     # o primeiro valor de audio features (que se repete em cada linha).
     agregacoes = {"track_genre": lambda generos: ", ".join(sorted(set(generos)))}
     agregacoes.update({coluna: "first" for coluna in COLUNAS_AUDIO_FEATURES})
@@ -64,11 +70,10 @@ def carregar_dataset_kaggle():
     return df_agrupado
 
 
-def enriquecer_top_tracks():
-    """Cruza o top_tracks.csv pessoal com o dataset do Kaggle já agrupado."""
-    caminho_top_tracks = os.path.join(PROCESSED_DIR, "top_tracks.csv")
-    df_pessoal = pd.read_csv(caminho_top_tracks)
-    df_kaggle = carregar_dataset_kaggle()
+def enriquecer_tabela(df_kaggle, arquivo_entrada, arquivo_saida):
+    """Cruza uma tabela pessoal (CSV em data/processed/) com o dataset do
+    Kaggle já agrupado e salva o resultado como um novo CSV."""
+    df_pessoal = pd.read_csv(os.path.join(PROCESSED_DIR, arquivo_entrada))
 
     df_pessoal["nome_faixa_norm"] = df_pessoal["nome_faixa"].apply(normalizar)
     df_pessoal["artista_norm"] = df_pessoal["artista"].apply(normalizar)
@@ -83,20 +88,21 @@ def enriquecer_top_tracks():
     # Limpa as colunas auxiliares de normalização, não precisamos delas no resultado final
     df_resultado = df_resultado.drop(columns=["nome_faixa_norm", "artista_norm"])
 
-    return df_resultado
+    total = len(df_resultado)
+    encontrados = df_resultado["track_genre"].notna().sum()
+    print(f"  {arquivo_entrada}: {encontrados} de {total} faixas encontradas no Kaggle ({encontrados/total:.0%})")
+
+    caminho_saida = os.path.join(PROCESSED_DIR, arquivo_saida)
+    df_resultado.to_csv(caminho_saida, index=False, encoding="utf-8")
+    print(f"  Salvo: {caminho_saida}\n")
 
 
 def run_enrichment():
     print("Cruzando seus dados com o dataset do Kaggle...\n")
-    df_resultado = enriquecer_top_tracks()
+    df_kaggle = carregar_dataset_kaggle()
 
-    total = len(df_resultado)
-    encontrados = df_resultado["track_genre"].notna().sum()
-    print(f"Faixas encontradas no Kaggle: {encontrados} de {total} ({encontrados/total:.0%})\n")
-
-    output_path = os.path.join(PROCESSED_DIR, "top_tracks_enriquecido.csv")
-    df_resultado.to_csv(output_path, index=False, encoding="utf-8")
-    print(f"Salvo: {output_path}")
+    for arquivo_entrada, arquivo_saida in TABELAS_PARA_ENRIQUECER:
+        enriquecer_tabela(df_kaggle, arquivo_entrada, arquivo_saida)
 
 
 if __name__ == "__main__":

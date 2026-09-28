@@ -5,7 +5,7 @@ Lê os arquivos JSON brutos (em data/raw/), extrai só os campos que
 interessam pra análise, limpa e organiza em tabelas, e salva como CSV
 em data/processed/ — prontos para virar tabelas SQL na próxima etapa.
 
-Nota: usei .get() em vez de [] em vários campos porque o Spotify
+Nota: usamos .get() em vez de [] em vários campos porque o Spotify
 restringiu alguns campos (como "popularity" e "genres") para apps
 criados recentemente. Com .get(), se o campo não vier na resposta,
 usamos um valor padrão em vez de o script quebrar.
@@ -33,6 +33,14 @@ def formatar_duracao(duration_ms):
     return f"{minutos}:{segundos:02d}"  # :02d garante "05" em vez de "5"
 
 
+def primeiro_artista(track):
+    """Retorna o nome do primeiro artista da faixa, ou o valor padrão."""
+    artistas = track.get("artists")
+    if artistas:
+        return artistas[0].get("name", VALOR_PADRAO)
+    return VALOR_PADRAO
+
+
 def load_latest_json(prefix):
     """Encontra e carrega o arquivo JSON mais recente que começa com o
     prefixo dado (ex: 'top_tracks' encontra 'top_tracks_2026-09-03.json')."""
@@ -52,7 +60,7 @@ def transform_top_tracks(raw_data):
         rows.append({
             "ranking": i,
             "nome_faixa": track.get("name", VALOR_PADRAO),
-            "artista": track["artists"][0].get("name", VALOR_PADRAO) if track.get("artists") else VALOR_PADRAO,
+            "artista": primeiro_artista(track),
             "album": track.get("album", {}).get("name", VALOR_PADRAO),
             "popularidade": track.get("popularity", VALOR_PADRAO),
             "duracao_ms": track.get("duration_ms", VALOR_PADRAO),
@@ -87,7 +95,7 @@ def transform_recently_played(raw_data):
         track = item.get("track", {})
         rows.append({
             "nome_faixa": track.get("name", VALOR_PADRAO),
-            "artista": track["artists"][0].get("name", VALOR_PADRAO) if track.get("artists") else VALOR_PADRAO,
+            "artista": primeiro_artista(track),
             "album": track.get("album", {}).get("name", VALOR_PADRAO),
             "tocada_em": item.get("played_at"),
             "spotify_id": track.get("id", VALOR_PADRAO),
@@ -98,15 +106,21 @@ def transform_recently_played(raw_data):
 
 
 def transform_saved_tracks(raw_data):
-    """Extrai campos relevantes das músicas curtidas/salvas."""
+    """Extrai campos relevantes das músicas curtidas/salvas. Inclui
+    data de lançamento e duração, pra que essa tabela (a maior, com
+    toda a biblioteca) possa alimentar as mesmas análises do top_tracks."""
     rows = []
     for item in raw_data:
         track = item.get("track", {})
         rows.append({
             "nome_faixa": track.get("name", VALOR_PADRAO),
-            "artista": track["artists"][0].get("name", VALOR_PADRAO) if track.get("artists") else VALOR_PADRAO,
+            "artista": primeiro_artista(track),
             "album": track.get("album", {}).get("name", VALOR_PADRAO),
             "popularidade": track.get("popularity", VALOR_PADRAO),
+            "duracao_ms": track.get("duration_ms", VALOR_PADRAO),
+            "duracao_min": round(track["duration_ms"] / 60000, 2) if track.get("duration_ms") else VALOR_PADRAO,
+            "duracao_formatada": formatar_duracao(track.get("duration_ms")),
+            "data_lancamento": track.get("album", {}).get("release_date", VALOR_PADRAO),
             "curtida_em": item.get("added_at"),
             "spotify_id": track.get("id", VALOR_PADRAO),
         })
