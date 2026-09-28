@@ -10,6 +10,9 @@ O cruzamento é feito por nome da faixa + artista, já que os IDs do
 Kaggle não correspondem aos IDs da sua conta Spotify. É aplicado tanto
 nas top faixas quanto nas músicas curtidas (a base maior, com toda a
 biblioteca).
+
+Também gera a tabela saved_tracks_generos, com uma linha por faixa+gênero,
+que é o formato certo pra contar gêneros em gráficos e dashboards.
 """
 
 import os
@@ -96,13 +99,42 @@ def enriquecer_tabela(df_kaggle, arquivo_entrada, arquivo_saida):
     df_resultado.to_csv(caminho_saida, index=False, encoding="utf-8")
     print(f"  Salvo: {caminho_saida}\n")
 
+    return df_resultado
+
+
+def gerar_tabela_generos(df_enriquecido):
+    """Transforma a coluna de gêneros (uma string com vários gêneros
+    separados por vírgula) em uma tabela onde cada linha é UMA faixa com
+    UM gênero. Uma música com 3 gêneros vira 3 linhas. Esse formato
+    ("longo") é o que ferramentas de BI precisam pra contar gêneros
+    corretamente, em vez de tratar "indie, indie-pop" como uma categoria só.
+    Faixas sem match no Kaggle (sem gênero) ficam de fora."""
+    df = df_enriquecido[["spotify_id", "nome_faixa", "artista", "track_genre"]].copy()
+    df = df.dropna(subset=["track_genre"])
+
+    # split transforma "indie, indie-pop" em ["indie", "indie-pop"]
+    # explode cria uma linha nova para cada item dessa lista
+    df["genero"] = df["track_genre"].str.split(", ")
+    df = df.explode("genero").drop(columns=["track_genre"])
+    df["genero"] = df["genero"].str.strip()
+
+    caminho_saida = os.path.join(PROCESSED_DIR, "saved_tracks_generos.csv")
+    df.to_csv(caminho_saida, index=False, encoding="utf-8")
+
+    print(f"  saved_tracks_generos.csv: {df['spotify_id'].nunique()} faixas -> {len(df)} linhas, {df['genero'].nunique()} gêneros distintos")
+    print(f"  Salvo: {caminho_saida}\n")
+
 
 def run_enrichment():
     print("Cruzando seus dados com o dataset do Kaggle...\n")
     df_kaggle = carregar_dataset_kaggle()
 
     for arquivo_entrada, arquivo_saida in TABELAS_PARA_ENRIQUECER:
-        enriquecer_tabela(df_kaggle, arquivo_entrada, arquivo_saida)
+        df_resultado = enriquecer_tabela(df_kaggle, arquivo_entrada, arquivo_saida)
+
+        # A tabela de gêneros é gerada só a partir das músicas curtidas (a base grande)
+        if arquivo_entrada == "saved_tracks.csv":
+            gerar_tabela_generos(df_resultado)
 
 
 if __name__ == "__main__":

@@ -16,3 +16,5 @@ data/processed/
 .idea/
 
 src/playground.py
+
+data/external/
