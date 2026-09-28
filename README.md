@@ -22,11 +22,7 @@ The Power BI file is in `dashboard/veridis.pbix`. It uses Import mode, so the da
 
 ## Architecture
 
-```
-[Spotify API] → [Extraction] → [S3: raw JSON] → [Transformation] ─┐
-                                                                   ├→ [Merge] → [PostgreSQL / RDS] → [Power BI]
-[Kaggle CSV] ──────────────────────────────────────────────────────┘
-```
+![Veridis architecture](screenshots/architecture.jpg)
 
 | Script | Stage | What it does |
 |---|---|---|
